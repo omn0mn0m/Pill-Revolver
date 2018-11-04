@@ -1,0 +1,34 @@
+extends layout
+
+block content
+	.page-header.pb-4
+		a(href='/addpatient')
+			button.col-lg-4.offset-lg-1.btn.btn-primary
+				i.far.fa-user.fa-sm
+				| Add New Patient
+		a(href='/addmedication')
+			button.col-lg-4.offset-lg-2.btn.btn-primary
+				i.far.fa-user.fa-sm
+				| Add New Medication
+	.page-header
+		h3.text-center All Patients
+
+	for patient in patients
+		h5= patient.name + " (" + patient.id + ")"
+		table.table
+			thead.thead-dark
+				tr
+					th Med Name
+					th Dosage (mg)
+					th Time Interval (hr)
+					th Last Taken
+			for medication in medications
+				tr
+					if medication.patient == patient.name
+						td= medication.name
+						td= medication.dose
+						td= medication.time
+						if medication.lastTaken
+							td= medication.lastTaken
+						else
+							td N/A

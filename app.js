@@ -34,6 +34,7 @@ const homeController = require('./controllers/home');
 const userController = require('./controllers/user');
 const apiController = require('./controllers/api');
 const contactController = require('./controllers/contact');
+const patientController = require('./controllers/patient');
 
 /**
  * API keys and Passport configuration.
@@ -142,6 +143,36 @@ app.post('/account/profile', passportConfig.isAuthenticated, userController.post
 app.post('/account/password', passportConfig.isAuthenticated, userController.postUpdatePassword);
 app.post('/account/delete', passportConfig.isAuthenticated, userController.postDeleteAccount);
 app.get('/account/unlink/:provider', passportConfig.isAuthenticated, userController.getOauthUnlink);
+app.get('/patients', passportConfig.isAuthenticated, patientController.getPatients);
+app.get('/addpatient', passportConfig.isAuthenticated, patientController.getAddPatient);
+app.post('/addpatient', passportConfig.isAuthenticated, patientController.postAddPatient);
+app.get('/addmedication', passportConfig.isAuthenticated, patientController.getAddMedication);
+app.post('/addmedication', passportConfig.isAuthenticated, patientController.postAddMedication);
+
+const Patient = require('./models/Patient.js');
+const Medication = require('./models/Medication.js');
+
+app.get('/db/:patient', (req, res) => {
+    var patient = mongoose.Types.ObjectId(req.params.patient);
+
+    Patient.findById(patient).lean().exec((err, records) => {
+        if (err) {
+            return res.send(err);
+        }
+
+        Medication.find({patient: records.name}).lean().exec((err2, docs) => {
+            if (err2) {
+                return res.send(err2);
+            }
+
+            var toSend = Object.assign(records, docs);
+
+            res.json(toSend);
+        });
+
+       // res.json(records);
+    });
+});
 
 /**
  * API examples routes.
