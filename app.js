@@ -89,15 +89,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
-app.use((req, res, next) => {
-  if (req.path === '/api/upload') {
-    next();
-  } else {
-    lusca.csrf()(req, res, next);
-  }
-});
-app.use(lusca.xframe('SAMEORIGIN'));
-app.use(lusca.xssProtection(true));
+//app.use((req, res, next) => {
+//  if (req.path === '/api/upload') {
+//    next();
+//  } else {
+//    lusca.csrf()(req, res, next);
+//  }
+//});
+//app.use(lusca.xframe('SAMEORIGIN'));
+//app.use(lusca.xssProtection(true));
 app.disable('x-powered-by');
 app.use((req, res, next) => {
   res.locals.user = req.user;
@@ -169,9 +169,30 @@ app.get('/db/:patient', (req, res) => {
 
             res.json(toSend);
         });
-
-       // res.json(records);
     });
+});
+
+app.post('/db/pill', (req, res) => {
+    var id = mongoose.Types.ObjectId(req.body.id);
+    var time = new Date(req.body.time);
+
+    Patient.findById(id).lean().exec((err, records) => {
+        if (err) {
+            return res.send(err);
+        }
+
+        Medication.find({patient: records.name}).lean().exec((err2, docs) => {
+            if (err2) {
+                return res.send(err2);
+            }
+
+           for (var i = 0; i < docs.length; i++) {
+               docs[i].lastTaken = time;
+           }
+        });
+    });
+
+    res.send('Received: ' + id + ' ' + time);
 });
 
 /**
